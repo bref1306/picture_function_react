@@ -1,4 +1,5 @@
 import { Camera } from 'expo-camera';
+import { FontAwesome } from '@expo/vector-icons';
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet,  TouchableOpacity, FlatList, Image, Modal } from 'react-native';
 import { Text, View} from '../components/Themed';
@@ -89,7 +90,8 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
     return <Text>No access to camera</Text>;
   }
   return (
-    <><View style={styles.container}>
+    <>
+    <View style={styles.container}>
       <Modal
         animationType="slide"
         transparent={true}
@@ -128,7 +130,7 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
         </Camera>
       </Modal>
     </View>
-    <View style={styles.container}>
+    <View style={{ flexDirection:'column', flex: 1}}>
     <FlatList
         horizontal={true}
         data={pictureArray}
@@ -140,14 +142,16 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
           );
         } }
         keyExtractor={(item) => item.uri} />
-    <TouchableOpacity 
-        style={styles.container}
-        onPress={ () => setModalVisible(!modalVisible)}
-      >
-        <View style={{ flexDirection:'row', justifyContent:'center'}}>
-          <View style={{ backgroundColor:'red', height:45, width:45, borderRadius: 50 }}></View>
-        </View>
-      </TouchableOpacity>
+      <TouchableOpacity 
+          style={styles.container}
+          onPress={ () => setModalVisible(!modalVisible)}
+        >
+          <View style={{ flexDirection:'row', justifyContent:'center'}}>
+            <View style={styles.containerIcon}>
+              <FontAwesome name="plus" size={30} style={{ color: '#fff' }} />
+            </View>
+          </View>
+        </TouchableOpacity>
     </View>
     </>
   );
@@ -159,6 +163,15 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+  },
+  containerIcon: {
+    backgroundColor:'#000', 
+    height:45, 
+    width:45, 
+    borderRadius: 50, 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    alignItems: 'center'
   },
   buttonContainer: {
     flex: 1,
