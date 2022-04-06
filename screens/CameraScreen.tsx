@@ -1,19 +1,33 @@
 import { Camera } from 'expo-camera';
-import { CapturedPicture } from 'expo-camera/build/Camera.types';
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet,  TouchableOpacity, FlatList, Image } from 'react-native';
 import { Text, View} from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
+import * as Location from 'expo-location';
+import { PictureGeo } from './CapturedPicture';
+import { CapturedPicture } from 'expo-camera/build/Camera.types';
 
 export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'>) {
   const [hasPermission, setHasPermission] = useState(Boolean||null);
+  const [location, setLocation] = useState(Object||null);
+  const [errorMsg, setErrorMsg] = useState(String||null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const cameraRef = useRef<Camera|null>();
-  const [pictureArray, setTable] = useState<Array<CapturedPicture>>([]);
-  //const [item, setItem] = useLocalStorage('base64', '');
+  const [pictureArray, setTable] = useState<Array<PictureGeo>>([]);
+
+  let latitude = 0;
+  let longitude = 0;
  
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+    latitude = location.coords.latitude;
+    longitude = location.coords.longitude;
+  }
   async function save(key : string, value : string) {
     await AsyncStorage.setItem(key, value);
   }
@@ -26,17 +40,19 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
   }
   const takePicture = () => {
    cameraRef.current && cameraRef.current.takePictureAsync({base64: true}).then(picture => {
+     const geoPicture : PictureGeo = ({
+       ...picture,
+       latitude,
+       longitude,
+    }); 
     setTable([
       ...pictureArray,
-      picture,
+      geoPicture,
     ]),
     saveGallery(picture.uri);
-      console.log(pictureArray);
+      console.log(geoPicture);
     });
   }
-  const getPicture = async () => {
-    await AsyncStorage.getItem('savedPicture');
-   }
 
   useEffect(() => {
     if (pictureArray.length == 0) {
@@ -51,12 +67,21 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      const res = await MediaLibrary.requestPermissionsAsync()
+      const { status } = await Camera.requestCameraPermissionsAsync() && await Location.requestForegroundPermissionsAsync();
+      const res = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
 
       setHasPermission(status === 'granted');
     })();
   }, []);
+
+ 
+
 
   if (hasPermission === null) {
     return <View />;
@@ -86,7 +111,7 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => 
-            {takePicture()}
+            {takePicture();}
           }
           style={styles.buttonTakePicture}>
 
