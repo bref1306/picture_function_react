@@ -20,9 +20,9 @@ const linking: LinkingOptions<RootStackParamList> = {
               CameraScreen: 'one',
             },
           },
-          TabTwo: {
+          Map: {
             screens: {
-              TabTwoScreen: 'two',
+              MapScreen: 'two',
             },
           },
         },
