@@ -8,7 +8,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as MediaLibrary from 'expo-media-library';
 import * as Location from 'expo-location';
 import { PictureGeo } from './CapturedPicture';
-import { CapturedPicture } from 'expo-camera/build/Camera.types';
 
 export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'>) {
   const [hasPermission, setHasPermission] = useState(Boolean||null);
@@ -22,14 +21,14 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
   let latitude = 0;
   let longitude = 0;
  
-  // let text = 'Waiting..';
-  // if (errorMsg) {
-  //   text = errorMsg;
-  // } else if (location) {
-  //   text = JSON.stringify(location);
-  //   latitude = location.coords.latitude != null ? location.coords.latitude : 0;
-  //   longitude = location.coords.latitude != null ? location.coords.longitude : 0;
-  // }
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+    latitude = location.coords.latitude != null ? location.coords.latitude : 0;
+    longitude = location.coords.latitude != null ? location.coords.longitude : 0;
+  }
 
   async function save(key : string, value : string) {
     await AsyncStorage.setItem(key, value);
@@ -91,7 +90,33 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
   }
   return (
     <>
-    <View style={styles.container}>
+    
+    <View style={{ flexDirection:'column', justifyContent:'space-between', flex: 1}}>
+    <FlatList
+        horizontal={false}
+        numColumns={3}
+        data={pictureArray}
+        renderItem={({ item }) => {
+          return (
+            <View style={{ borderColor: '#fff', borderWidth: 2, flex: 1/3 }}>
+              <Image source={{ uri: 'data:image/jpg;base64,' + item.base64 }} style={{ width: 120, height: 120, borderColor: 'red' }}></Image>
+            </View>
+          );
+        } }
+        keyExtractor={(item) => item.uri} 
+    />
+     
+          <View style={{ flexDirection:'row', justifyContent:'center'}}>
+            <View style={styles.containerIcon}>
+              <TouchableOpacity 
+                onPress={ () => setModalVisible(!modalVisible)}
+              >
+                <FontAwesome name="plus" size={30} style={{ color: '#fff' }} />
+              </TouchableOpacity>
+            </View>
+          </View>
+    </View>
+    
       <Modal
         animationType="slide"
         transparent={true}
@@ -100,6 +125,7 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
           console.log('Modal has been closed.');
           setModalVisible(!modalVisible);
         } }>
+        <View style={styles.container}>
         <Camera
           type={type} style={styles.camera}
           ref={(camera) => {
@@ -119,6 +145,7 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
               <Text> Flip </Text>
             </TouchableOpacity>
             <TouchableOpacity
+              touchSoundDisabled={true}
               onPress={() => takePicture()}
               style={styles.buttonTakePicture}>
 
@@ -128,31 +155,8 @@ export default function CameraScreen({ navigation }: RootTabScreenProps<'Camera'
             </TouchableOpacity>
           </View>
         </Camera>
+        </View>
       </Modal>
-    </View>
-    <View style={{ flexDirection:'column', flex: 1}}>
-    <FlatList
-        horizontal={true}
-        data={pictureArray}
-        renderItem={({ item }) => {
-          return (
-            <View>
-              <Image source={{ uri: 'data:image/jpg;base64,' + item.base64 }} style={{ width: 45, height: 45, borderColor: 'red' }}></Image>
-            </View>
-          );
-        } }
-        keyExtractor={(item) => item.uri} />
-      <TouchableOpacity 
-          style={styles.container}
-          onPress={ () => setModalVisible(!modalVisible)}
-        >
-          <View style={{ flexDirection:'row', justifyContent:'center'}}>
-            <View style={styles.containerIcon}>
-              <FontAwesome name="plus" size={30} style={{ color: '#fff' }} />
-            </View>
-          </View>
-        </TouchableOpacity>
-    </View>
     </>
   );
 }

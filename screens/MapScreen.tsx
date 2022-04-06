@@ -1,14 +1,30 @@
-import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '../components/EditScreenInfo';
+import { StyleSheet, Dimensions} from 'react-native';
 import { Text, View } from '../components/Themed';
+import MapView from "react-native-map-clustering";
+import { Marker } from 'react-native-maps';
 
 export default function MapScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/MapScreen.tsx" />
+      <View style={styles.container}>
+      <MapView 
+        initialRegion={{
+          latitude: 45.2565749474502,
+          longitude: 2.3099165578635086,
+          latitudeDelta: 8,
+          longitudeDelta: 8,
+        }}
+        style={styles.map} >
+           {/* {state.pictureArray.map((marker, index) => (
+              <Marker
+                key={index}
+                coordinate={marker.latlng}
+                title={marker.title}
+                description={marker.description}
+              />
+            ))} */}
+        </MapView>
+      </View>
     </View>
   );
 }
@@ -16,16 +32,12 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  map: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
   },
 });
